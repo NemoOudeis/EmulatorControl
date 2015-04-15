@@ -1,7 +1,7 @@
 module EmuCtl
   class Emulator
     @@EMU_TIMEOUT = 180
-    
+
     def self.start(emu)
       raise 'invalid name: nil' if emu.name.nil?
       puts "starting emulator: #{emu}"
@@ -62,9 +62,7 @@ module EmuCtl
     end
 
     def self.kill_all
-      pids = Emulator.running_pids
-      puts "found running emulators with pid: #{pids}"
-      pids.each { |pid| system "kill -9 #{pid}" }
+      Emulator.running_pids.each { |pid| system "kill -9 #{pid}" }
     end
   end
 end
