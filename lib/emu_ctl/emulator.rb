@@ -1,11 +1,12 @@
 module EmuCtl
+  @@EMU_TIMEOUT = 180
+
   class Emulator
-    def self.start(arg)
-      raise 'invalid arg: nil' if arg.nil?
-      emu = emulator_id(arg)
+    def self.start(emu)
+      raise 'invalid name: nil' if emu.name.nil?
       puts "starting emulator: #{emu}"
-      puts "emulator -no-boot-anim -avd #{emu} -no-snapshot-load -no-snapshot-save -no-window"
-      system "emulator -no-boot-anim -avd #{emu} -no-snapshot-load -no-snapshot-save -no-window &"
+      puts "emulator -no-boot-anim -avd #{emu.name} -no-snapshot-load -no-snapshot-save -no-window"
+      system "emulator -no-boot-anim -avd #{emu.name} -no-snapshot-load -no-snapshot-save -no-window &"
       starting_up = true
 
       start = Time.now
@@ -15,13 +16,12 @@ module EmuCtl
         print "\r"
         print "Waiting for emulator " + "."*(ellapsed/2).to_i
         STDOUT.flush
-        abort 'unable to start emulator for 6 minutes' if Time.now - start > 360
+        abort "unable to start emulator for #{@@EMU_TIMEOUT/60} minutes" if Time.now - start > @@EMU_TIMEOUT
       end
 
       puts ''
       puts 'emulator up and running'
-      _, stdout, _ = Open3.popen3('adb devices')
-      stdout.each_line { |l| puts l }
+      puts ADB.devices
 
       puts 'unlocking screen'
       ADB.unlock_emulator
@@ -43,12 +43,25 @@ module EmuCtl
       target_descs.map { |desc| Target.new(desc) }
     end
 
-    def self.create(id, skin)
-      system "android create avd -n emu_#{id}_#{skin} -t #{id} -s #{skin}"
+    def self.create(target_id, skin)
+      system "android create avd -n emu_#{target_id}_#{skin} -t #{target_id} -s #{skin}"
     end
 
-    def self.delete(name)
-      system "android delete avd -n #{name}"
+    def self.delete(emu)
+      system "android delete avd -n #{emu.name}"
+    end
+
+    def self.running_pids
+      _, stdout, _ = Open3.popen3("pgrep 'emulator'")
+      pids = []
+      stdout.each_line { |l| pids.push(l.strip) }
+      pids
+    end
+
+    def self.kill_all
+      pids = Emulator.running_pids
+      puts "found running emulators with pid: #{pids}"
+      pids.each { |pid| system "kill -9 #{pid}" }
     end
   end
 end
