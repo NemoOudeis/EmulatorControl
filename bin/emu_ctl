@@ -55,7 +55,7 @@ case action
     puts "creating new avd from #{target.id} with skin #{skin}"
     EmuCtl::Emulator.create(target, skin)
   when 'running'
-  	puts ADB.devices
+  	puts EmuCtl::ADB.devices
   when 'rm'
   	emu_index = ARGV.shift
   	raise 'you need to specify the emulator id' if emu_index.nil?
