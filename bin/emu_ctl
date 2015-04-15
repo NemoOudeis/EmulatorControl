@@ -19,6 +19,7 @@ Usage:
     #{File.basename($0)} targets       shows all possible targets and skins, will only display targets with abi
     #{File.basename($0)} new ID SKIN   creates a new avd with API level according to ID and skin SKIN
                                        check `targets` for possible values (depends on installed sdk packages)
+                                       Only works for targets with default abi
     #{File.basename($0)} rm ID         deletes avd with ID returned in list"
 
 # command line args
@@ -52,15 +53,15 @@ case action
     raise "you need to specify target and skin" if target_index.nil? || skin.nil?
     target = EmuCtl::Emulator.list_targets[target_index]
     puts "creating new avd from #{target.id} with skin #{skin}"
-    # EmuCtl::Emulator.create(target.id, skin)
+    EmuCtl::Emulator.create(target, skin)
   when 'running'
   	puts ADB.devices
   when 'rm'
-  	emu_index = ARGV.shift.to_i
+  	emu_index = ARGV.shift
   	raise 'you need to specify the emulator id' if emu_index.nil?
-  	emu = EmuCtl::Emulator.list[emu_index]
+  	emu = EmuCtl::Emulator.list[Integer(emu_index)]
   	puts "deleting: #{emu}"
-  	Android.remove_avd(emu)
+  	EmuCtl::Emulator.delete(emu)
   else
     raise "unknown action #{action}\n#{usage}"
 end

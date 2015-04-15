@@ -14,9 +14,11 @@ RSpec.describe EmuCtl::Emulator do
   describe 'emulator creation and deletion' do
     it 'creates new emulator' do
       old_list = EmuCtl::Emulator.list
-      target = EmuCtl::Emulator.list_targets.last
+      # only targets with default abi
+      target = EmuCtl::Emulator.list_targets.select{|t| t.abi.include?('default')}.last
       puts "creating emulator for target #{target.name} and skin #{target.skins[0]}"
-      # EmuCtl::Emulator.create(target.id, target.skins[0])
+
+      EmuCtl::Emulator.create(target, target.skins[0])
       expect(EmuCtl::Emulator.list.count).to eq(old_list.count + 1)
     end
 
@@ -24,7 +26,7 @@ RSpec.describe EmuCtl::Emulator do
       old_list = EmuCtl::Emulator.list
       emu = old_list.last
       puts "deleting emulator #{emu}"
-      # EmuCtl::Emulator.delete(emu)
+      EmuCtl::Emulator.delete(emu)
       expect(EmuCtl::Emulator.list.count).to eq(old_list.count - 1)
     end
 

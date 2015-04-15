@@ -43,8 +43,11 @@ module EmuCtl
       target_descs.map { |desc| Target.new(desc) }.select{|t| t.abi.nil? == false && filter}
     end
 
-    def self.create(target_id, skin)
-      system "android create avd -n emu_#{target_id}_#{skin} -t #{target_id} -s #{skin}"
+    def self.create(target, skin)
+      escaped_id = target.id.gsub(/(\s|:)/,'-')
+      cmd = "android create avd -n emu_#{escaped_id}_#{skin} -t \"#{target.id}\" -s #{skin}"
+      puts cmd
+      system cmd
     end
 
     def self.delete(emu)
