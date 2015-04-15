@@ -1,0 +1,92 @@
+#!/usr/bin/env ruby
+require 'emu_ctl'
+require 'rubygems'
+require 'open3'
+
+#
+# starts up android emulator on headless unix machine
+# can only handle 1 emulator at a time
+# needs adb, android and emulator on the path (from Android SDK)
+#
+
+usage = "
+Usage: 
+    ruby #{File.basename($0)} list          prints all available emulators
+    ruby #{File.basename($0)} running       shows all running emulators
+    ruby #{File.basename($0)} kill          kills all running emulators
+    ruby #{File.basename($0)} launch ID     runs the emulator with ID,
+                                            ID is an integer form the output of `list`
+    ruby #{File.basename($0)} targets       shows all possible targets and skins, will only display targets with abi
+    ruby #{File.basename($0)} new ID SKIN   creates a new avd with API level according to ID and skin SKIN
+                                            check `targets` for possible values (depends on installed sdk packages)
+    ruby #{File.basename($0)} rm ID         deletes avd with ID returned in list"
+
+def kill_all_emulators
+  _, stdout, _ = Open3.popen3("pgrep 'emulator'")
+  pids = []
+  stdout.each_line { |l| pids.push(l.strip) }
+  puts "found running emulators with pid: #{pids}"
+  pids.each { |pid| system "kill -9 #{pid}" }
+  puts "killed all emulators"
+end
+
+def print_emulators
+  avds = Android.list_avds
+  puts avds.map { |a| "#{avds.index(a)} - #{a}" }
+end
+
+def print_targets
+  targets = Android.list_targets.select { |t| !t.abi.nil? }
+  puts 'Possbile Targets are:'
+  puts targets.join("\n")
+end
+
+def emulator_id(arg)
+  /Name: (.*)/.match(Android.list_avds[Integer(arg)].id)[1]
+end
+
+def target_id(arg)
+  _, stdout, _ = Open3.popen3('android list targets')
+  target = nil
+  stdout.each_line { |l| target = l.strip if l.include?("id: #{arg}") }
+  raise "no target for id #{arg}" if target.nil?
+  /id: \d+ or \"(.*)\"/.match(target)[1]
+end
+
+# command line args
+if ARGV.empty?
+  puts "You need to specify an action"
+  puts "#{usage}"
+  exit(2)
+end
+
+action = ARGV.shift
+case action
+  when 'kill'
+    kill_all_emulators
+  when 'list'
+    print_emulators
+  when 'launch'
+    raise "you need to specify the emulator id\n#{usage}" if ARGV.empty?
+    emu = ARGV.shift
+    start_emulator(emu)
+  when 'targets'
+    print_targets
+  when 'new'
+    target = ARGV.shift
+    skin = ARGV.shift
+    raise "you need to specify target and skin" if target.nil? || skin.nil?
+    id = target_id(target)
+    puts "creating new avd from #{id} with skin #{skin}"
+    system "android create avd -n emu_#{id}_#{skin} -t #{id} -s #{skin}"
+  when 'running'
+  	puts ADB.devices
+  when 'rm'
+  	emu_id = ARGV.shift
+  	raise 'you need to specify the emulator id' if emu_id.nil?
+  	emu = emulator_id(emu_id)
+  	puts "deleting: #{emu}"
+  	Android.remove_avd(emu)
+  else
+    raise "unknown action #{action}\n#{usage}"
+end
