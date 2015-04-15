@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+require 'emu_ctl'
+require 'rubygems'
+require 'open3'
+
+#
+# starts up android emulator on headless unix machine
+# can only handle 1 emulator at a time
+# needs adb, android and emulator on the path (from Android SDK)
+#
+
+usage = "
+Usage: 
+    #{File.basename($0)} list          prints all available emulators
+    #{File.basename($0)} running       shows all running emulators
+    #{File.basename($0)} kill          kills all running emulators
+    #{File.basename($0)} launch ID     runs the emulator with ID,
+                                       ID is an integer form the output of `list`
+    #{File.basename($0)} targets       shows all possible targets and skins, will only display targets with abi
+    #{File.basename($0)} new ID SKIN   creates a new avd with API level according to ID and skin SKIN
+                                       check `targets` for possible values (depends on installed sdk packages)
+                                       Only works for targets with default abi
+    #{File.basename($0)} rm ID         deletes avd with ID returned in list"
+
+# command line args
+if ARGV.empty?
+  puts "You need to specify an action"
+  puts "#{usage}"
+  exit(2)
+end
+
+action = ARGV.shift
+case action
+  when 'kill'
+    pids = EmuCtl::Emulator.running_pids
+    puts "found running emulators with pid: #{pids}"
+    EmuCtl::Emulator.kill_all
+    puts "killed all emulators"
+  when 'list'
+    emus = EmuCtl::Emulator.list
+    puts emus.map{ |o| "#{emus.index(o)} - #{o.to_s}" }.join("\n")
+  when 'launch'
+    raise "you need to specify the emulator id\n#{usage}" if ARGV.empty?
+    index = ARGV.shift.to_i
+    emu = EmuCtl::Emulator.list[index]
+    EmuCtl::Emulator.start(emu)
+  when 'targets'
+    targets = EmuCtl::Emulator.list_targets
+    puts targets.map{ |o| "#{targets.index(o)} - #{o.to_s}" }.join("\n")
+  when 'new'
+    target_index = ARGV.shift.to_i
+    skin = ARGV.shift
+    raise "you need to specify target and skin" if target_index.nil? || skin.nil?
+    target = EmuCtl::Emulator.list_targets[target_index]
+    puts "creating new avd from #{target.id} with skin #{skin}"
+    EmuCtl::Emulator.create(target, skin)
+  when 'running'
+  	puts EmuCtl::ADB.devices
+  when 'rm'
+  	emu_index = ARGV.shift
+  	raise 'you need to specify the emulator id' if emu_index.nil?
+  	emu = EmuCtl::Emulator.list[Integer(emu_index)]
+  	puts "deleting: #{emu}"
+  	EmuCtl::Emulator.delete(emu)
+  else
+    raise "unknown action #{action}\n#{usage}"
+end
