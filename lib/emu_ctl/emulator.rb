@@ -35,12 +35,12 @@ module EmuCtl
       lines.join.split('---------').map { |desc| Avd.new(desc) }
     end
 
-    def self.list_targets
+    def self.list_targets(filter = true)
       _, stdout, _ = Open3.popen3('android list targets')
       lines = []
       stdout.each_line { |l| lines.push(l) }
       target_descs = lines.join.split('----------').select { |t| t.include?('id: ') }
-      target_descs.map { |desc| Target.new(desc) }
+      target_descs.map { |desc| Target.new(desc) }.select{|t| t.abi.nil? == false && filter}
     end
 
     def self.create(target_id, skin)
