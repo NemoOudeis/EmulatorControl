@@ -1,7 +1,7 @@
 module EmuCtl
-  @@EMU_TIMEOUT = 180
-
   class Emulator
+    @@EMU_TIMEOUT = 180
+    
     def self.start(emu)
       raise 'invalid name: nil' if emu.name.nil?
       puts "starting emulator: #{emu}"
