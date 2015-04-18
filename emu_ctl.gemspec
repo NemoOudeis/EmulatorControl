@@ -4,13 +4,14 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "emu_ctl/version"
 
 Gem::Specification.new do |s|
-  s.name        = "emu_ctl"
-  s.version     = EmuCtl::VERSION
-  s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Nemo Oudeis"]
-  s.email       = ["nemo@oudeis.eu"]
-  s.homepage    = "https://github.com/NemoOudeis/EmulatorControl"
-  s.summary     = %q{command line tool to easily control android emulators}
+  s.name          = "emu_ctl"
+  s.version       = EmuCtl::VERSION
+  s.platform      = Gem::Platform::RUBY
+  s.authors       = ["Nemo Oudeis"]
+  s.email         = ["nemo@oudeis.eu"]
+  s.homepage      = "https://github.com/NemoOudeis/EmulatorControl"
+  s.summary       = %q{command line tool to easily control android emulators}
+  s.license       = 'MIT'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
