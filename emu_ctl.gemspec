@@ -8,9 +8,9 @@ Gem::Specification.new do |s|
   s.version     = EmuCtl::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Nemo Oudeis"]
-  s.email       = ["gems@oudeis.eu"]
-  s.homepage    = ""
-  s.summary     = %q{command line tool to easily control android simulators}
+  s.email       = ["nemo@oudeis.eu"]
+  s.homepage    = "https://github.com/NemoOudeis/EmulatorControl"
+  s.summary     = %q{command line tool to easily control android emulators}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -19,15 +19,15 @@ Gem::Specification.new do |s|
 
   s.post_install_message = <<-EOS
 
-  ******************************************************
-  * emu_ctl expects the Android SDK on your $PATH.     *
-  *                                                    *
-  ******************************************************
+  ****************************************************
+  *  emu_ctl expects the Android SDK on your $PATH.  *
+  *  (at least `android` and `adb`)                  *
+  ****************************************************
 
   EOS
 
-  s.add_development_dependency 'rspec'
+  s.add_development_dependency "rspec", "~> 3.2.0"
   s.add_development_dependency "bundler", "~> 1.8"
   s.add_development_dependency "rake", "~> 10.0"
-  s.add_development_dependency "guard-rspec"
+  s.add_development_dependency "guard-rspec", "~> 4.5.0"
 end
