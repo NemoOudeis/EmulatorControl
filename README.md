@@ -2,6 +2,8 @@
 
 Commandline util to maintain android emulators on headless machines (or just without window in gerneral).
 
+[![Gem Version](https://badge.fury.io/rb/emu_ctl.svg)](http://badge.fury.io/rb/emu_ctl)
+
 # NOT READY FOR PRODUCTION
 
 ## WHY?
