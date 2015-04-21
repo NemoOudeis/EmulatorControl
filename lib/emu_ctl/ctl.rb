@@ -1,15 +1,17 @@
 module EmuCtl
-  class Emulator
+  class Ctl
     @@EMU_TIMEOUT = 180
 
     def self.start(emu)
       raise 'invalid name: nil' if emu.name.nil?
       puts "starting emulator: #{emu}"
-      puts "emulator -no-boot-anim -avd #{emu.name} -no-snapshot-load -no-snapshot-save -no-window"
-      system "emulator -no-boot-anim -avd #{emu.name} -no-snapshot-load -no-snapshot-save -no-window &"
+      cmd = "emulator -no-boot-anim -avd #{emu.name} -no-snapshot-load -no-snapshot-save -no-audio -no-window -verbose &"
+      puts "#{cmd}"
+      system "#{cmd}"
       starting_up = true
 
       start = Time.now
+
       until ADB.boot_complete?
         sleep 2
         ellapsed = Time.now - start
@@ -55,14 +57,16 @@ module EmuCtl
     end
 
     def self.running_pids
+      warn 'deprecated: controlling emulators via pids is a bad idea'
       _, stdout, _ = Open3.popen3("pgrep 'emulator'")
       pids = []
       stdout.each_line { |l| pids.push(l.strip) }
       pids
     end
 
-    def self.kill_all
-      Emulator.running_pids.each { |pid| system "kill -9 #{pid}" }
+    def self.kill_pids(pids)
+      warn 'deprecated: controlling emulators via pids is a bad idea'
+      pids.each { |pid| system "kill -9 #{pid}" }
     end
   end
 end
