@@ -13,28 +13,38 @@ usage = "
 Usage: 
     #{File.basename($0)} list          prints all available emulators
     #{File.basename($0)} running       shows all running emulators
-    #{File.basename($0)} kill          kills all running emulators
+    #{File.basename($0)} kill (ID|all) kills the emulator with ID (see `running`) or all runnig emulators
     #{File.basename($0)} launch ID     runs the emulator with ID,
                                        ID is an integer form the output of `list`
     #{File.basename($0)} targets       shows all possible targets and skins, will only display targets with abi
     #{File.basename($0)} new ID SKIN   creates a new avd with API level according to ID and skin SKIN
                                        check `targets` for possible values (depends on installed sdk packages)
                                        Only works for targets with default abi
-    #{File.basename($0)} rm ID         deletes avd with ID returned in list"
+    #{File.basename($0)} rm ID         deletes avd with ID returned in list
+    #{File.basename($0)} force-kill    sends `kill -9` to all running emulator processes, BE CAREFUL"
 
 # command line args
 if ARGV.empty?
   puts "You need to specify an action"
   puts "#{usage}"
-  exit(2)
+  exit 2 
 end
 
 action = ARGV.shift
 case action
   when 'kill'
+    arg = ARGV.shift
+    raise 'you need to specify which emulator to kill' if arg.nil?
+    running = emus = EmuCtl::ADB.devices
+    targets = arg == 'all' ? running : [ running[arg.to_i] ]
+    puts "trying to kill emulators: \n\t#{targets.join('\n\t')}"
+    targets.each{ |t| EmuCtl::ADB.kill_emu(t.qualifier)}
+    puts "done killing"
+  when 'force-kill'
+    warn "dont' use `force-kill` if you don't have to, it might coase android to leave some trash in /tmp/android-[user]/"
     pids = EmuCtl::Ctl.running_pids
     puts "found running emulators with pid: #{pids}"
-    EmuCtl::Ctl.kill_all
+    EmuCtl::Ctl.kill_pids(pids)
     puts "killed all emulators"
   when 'list'
     avds = EmuCtl::Ctl.list
@@ -66,3 +76,4 @@ case action
   else
     puts "unknown action #{action}\n#{usage}"
 end
+exit 0

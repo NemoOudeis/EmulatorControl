@@ -64,9 +64,9 @@ module EmuCtl
       pids
     end
 
-    def self.kill_all
+    def self.kill_pids(pids)
       warn 'deprecated: controlling emulators via pids is a bad idea'
-      Ctl.running_pids.each { |pid| system "kill -9 #{pid}" }
+      pids.each { |pid| system "kill -9 #{pid}" }
     end
   end
 end
