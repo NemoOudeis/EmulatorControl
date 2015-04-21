@@ -38,4 +38,20 @@ module EmuCtl
       "#{@name}"
     end
   end
+
+  class Emulator
+    attr_accessor(:qualifier, :api_lvl, :os_name, :sdk)
+
+    def initialize(qual, api_lvl, os_name, sdk)
+      @qualifier = qual
+      @api_lvl = api_lvl
+      @os_name = os_name
+      @sdk = sdk
+    end
+
+    def to_s
+      "#{qualifier}: Running #{os_name} on API Level #{api_lvl} with sdk #{sdk}"
+    end
+
+  end
 end

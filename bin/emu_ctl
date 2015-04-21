@@ -32,36 +32,37 @@ end
 action = ARGV.shift
 case action
   when 'kill'
-    pids = EmuCtl::Emulator.running_pids
+    pids = EmuCtl::Ctl.running_pids
     puts "found running emulators with pid: #{pids}"
-    EmuCtl::Emulator.kill_all
+    EmuCtl::Ctl.kill_all
     puts "killed all emulators"
   when 'list'
-    emus = EmuCtl::Emulator.list
-    puts emus.map{ |o| "#{emus.index(o)} - #{o.to_s}" }.join("\n")
+    avds = EmuCtl::Ctl.list
+    puts avds.map{ |o| "#{avds.index(o)} - #{o.to_s}" }.join("\n")
   when 'launch'
     raise "you need to specify the emulator id\n#{usage}" if ARGV.empty?
     index = ARGV.shift.to_i
-    emu = EmuCtl::Emulator.list[index]
-    EmuCtl::Emulator.start(emu)
+    avd = EmuCtl::Ctl.list[index]
+    EmuCtl::Ctl.start(avd)
   when 'targets'
-    targets = EmuCtl::Emulator.list_targets
+    targets = EmuCtl::Ctl.list_targets
     puts targets.map{ |o| "#{targets.index(o)} - #{o.to_s}" }.join("\n")
   when 'new'
     target_index = ARGV.shift.to_i
     skin = ARGV.shift
     raise "you need to specify target and skin" if target_index.nil? || skin.nil?
-    target = EmuCtl::Emulator.list_targets[target_index]
+    target = EmuCtl::Ctl.list_targets[target_index]
     puts "creating new avd from #{target.id} with skin #{skin}"
-    EmuCtl::Emulator.create(target, skin)
+    EmuCtl::Ctl.create(target, skin)
   when 'running'
-  	puts EmuCtl::ADB.devices
+    emus = EmuCtl::ADB.devices
+    puts emus.map{ |o| "#{emus.index(o)} - #{o.to_s}" }.join("\n")
   when 'rm'
   	emu_index = ARGV.shift
   	raise 'you need to specify the emulator id' if emu_index.nil?
-  	emu = EmuCtl::Emulator.list[Integer(emu_index)]
-  	puts "deleting: #{emu}"
-  	EmuCtl::Emulator.delete(emu)
+  	avd = EmuCtl::Ctl.list[Integer(emu_index)]
+  	puts "deleting: #{avd}"
+  	EmuCtl::Ctl.delete(avd)
   else
-    raise "unknown action #{action}\n#{usage}"
+    puts "unknown action #{action}\n#{usage}"
 end
